@@ -3,19 +3,31 @@ import pandas as pd
 import os
 from datetime import datetime
 from dotenv import load_dotenv
+import streamlit as st  # Added this import
 
 class CryptoDataCollector:
     def __init__(self):
-        load_dotenv()  # Load environment variables from .env file
-        self.api_key = os.getenv('COINGECKO_API_KEY')
+        self.api_key = self.get_api_key()
         if not self.api_key:
-            raise ValueError("COINGECKO_API_KEY not found in environment variables")
+            raise ValueError("No API key found")
             
         self.headers = {
             'X-CG-API-KEY': self.api_key
         }
         self.price_data = None
         self.market_data = None
+
+    def get_api_key(self):  # Fixed indentation - was inside __init__
+        """Get API key from environment variables or Streamlit secrets"""
+        # Try .env file first
+        load_dotenv()
+        api_key = os.getenv('COINGECKO_API_KEY')
+        
+        # If not in .env, try Streamlit secrets
+        if not api_key and hasattr(st, 'secrets'):
+            api_key = st.secrets.get('COINGECKO_API_KEY')
+            
+        return api_key
 
     def collect_all_data(self):
         """Collect all necessary data"""
